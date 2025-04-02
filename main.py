@@ -1,8 +1,8 @@
 import os
-import uvicorn
 import csv
 import hashlib
 import time
+import uvicorn
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -24,9 +24,10 @@ def load_responses():
 # Load CSV data once at startup
 data = load_responses()
 
+# Home route
 @app.get("/")
 def home():
-    return {"message": "FastAPI is running on Railway!"}
+    return {"message": "FastAPI chatbot is running on Railway!"}
 
 # Chat endpoint
 @app.get("/chat")
@@ -41,6 +42,7 @@ def generate_key():
     key = hashlib.md5(str(time.time()).encode()).hexdigest()
     return {"api_key": key, "message": "Use this key to access the chatbot API."}
 
+# Run the application
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))  # Use Railway's assigned port
     uvicorn.run(app, host="0.0.0.0", port=port)
