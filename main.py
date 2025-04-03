@@ -22,11 +22,21 @@ def load_responses():
 # Load CSV data once at startup
 data = load_responses()
 
-# Chat endpoint (No API Key Required)
+# Home Route
+@app.get("/")
+def home():
+    return {"message": "Welcome to the Chat API!"}
+
+# Handle Favicon Request
+@app.get("/favicon.ico")
+def favicon():
+    return {"message": "No favicon available"}
+
+# Chat endpoint
 @app.get("/chat")
 def chat(question: str):
     return {"question": question, "answer": data.get(question, "I don't know")}
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))
+    port = int(os.getenv("PORT", 8080))  # Ensure it runs on port 8080
     uvicorn.run(app, host="0.0.0.0", port=port)
