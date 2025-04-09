@@ -26,7 +26,7 @@ def load_responses():
 
 data = load_responses()
 
-# Home page – Ask for Joke/Shayari
+# Home page – Ask for category
 @app.get("/", response_class=HTMLResponse)
 async def home_form():
     return """
@@ -35,31 +35,42 @@ async def home_form():
         <body>
             <h2>What do you want to hear?</h2>
             <form action="/select_type" method="post">
-                <input type="text" name="category" placeholder="Joke or Shayari" required>
+                <input type="text" name="category" placeholder="Joke, Shayari, Novel" required>
                 <button type="submit">Next</button>
             </form>
         </body>
     </html>
     """
 
-# Ask for subcategory
+# Ask for subcategory and suggest available options
 @app.post("/select_type", response_class=HTMLResponse)
 async def select_type(category: str = Form(...)):
+    available_subcategories = {
+        entry["subcategory"].title()
+        for entry in data if entry["category"].lower() == category.lower()
+    }
+    suggestions_html = (
+        "<ul>" + "".join(f"<li>{sub}</li>" for sub in sorted(available_subcategories)) + "</ul>"
+        if available_subcategories else "<p>No suggestions available.</p>"
+    )
+
     return f"""
     <html>
         <head><title>Select Subcategory</title></head>
         <body>
             <h2>What kind of {category}?</h2>
+            <p>Available options:</p>
+            {suggestions_html}
             <form action="/get_response" method="post">
                 <input type="hidden" name="category" value="{category}">
-                <input type="text" name="subcategory" placeholder="e.g. Food, Romantic, College" required>
+                <input type="text" name="subcategory" placeholder="e.g. Romantic, Thriller" required>
                 <button type="submit">Get {category}</button>
             </form>
         </body>
     </html>
     """
 
-# Show response
+# Show the selected joke/shayari/novel
 @app.post("/get_response", response_class=HTMLResponse)
 async def get_response(category: str = Form(...), subcategory: str = Form(...)):
     filtered = [
@@ -91,7 +102,7 @@ async def get_response(category: str = Form(...), subcategory: str = Form(...)):
     </html>
     """
 
-# API fallback for /chat (if needed)
+# API support for direct requests
 @app.get("/chat")
 def chat(category: str, subcategory: str):
     filtered = [
